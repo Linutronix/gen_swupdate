@@ -107,6 +107,14 @@ def main():
     parser.add_argument("-k", "--key", dest="key",
                         help="""pkcs11 uri or file name of the key used for
                                 signing the update""")
+    parser.add_argument("-p", "--passin", dest="passin",
+                        help="""pkcs11 pass phrase used for signing the update
+                        package e.g:
+                        --passin pass:<pass phrase> |
+                        --passin env:<environment variable> |
+                        --passin file:<file name> |
+                        --passin fd:<file descriptor number>
+                        """)
     parser.add_argument("-o", "--output", dest="output",
                         default="firmware.swu",
                         help="filename of the resulting update file")
@@ -124,6 +132,15 @@ def main():
     swdescription_in = os.path.abspath(opt.template)
     if opt.key:
         keyfile = os.path.abspath(opt.key)
+    passinarg = ''
+    if opt.passin:
+        storage = opt.passin.split(':')[0]
+        if storage == 'file':
+            passprhase = os.path.abspath(opt.passin.split(':')[1])
+            passinarg = f'-passin file:{passprhase}'
+        else:
+            passinarg = f'-passin {opt.passin}'
+
     opt.output = os.path.abspath(opt.output)
     opt.libdirs = [os.path.abspath(p) for p in opt.libdirs]
 
@@ -154,15 +171,17 @@ def main():
         if os.path.isfile(keyfile):
             logging.warning("""Please consider providing a pkcs11 uri instead
                                of a key file.""")
-            sign_cmd = 'openssl dgst -sha256 \
-                                     -sign "%s" sw-description \
-                                     > sw-description.sig' % keyfile
+            sign_cmd = f'openssl dgst -sha256 \
+                                     {passinarg} \
+                                     -sign {keyfile} sw-description \
+                                     > sw-description.sig'
         else:
-            sign_cmd = 'openssl dgst -sha256 \
+            sign_cmd = f'openssl dgst -sha256 \
                                      -engine pkcs11 \
+                                     {passinarg} \
                                      -keyform engine \
-                                     -sign "%s" sw-description \
-                                     > sw-description.sig' % opt.key
+                                     -sign {opt.key} sw-description \
+                                     > sw-description.sig'
 
         # Preventing the malloc check works around Debian bug #923333
         if os.system('MALLOC_CHECK_=0 ' + sign_cmd) != 0:
