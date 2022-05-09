@@ -119,6 +119,8 @@ def main():
     parser.add_argument("-f", "--files", dest="extrafiles",
                         help="""add files not present in the sw-description, provide
                                 a list in the form '-f <file1> <file2> ...'""")
+    parser.add_argument("-e", "--embedded-script", dest="embeddedscript",
+                        help="include an embedded script in the sw-description")
 
     opt = parser.parse_args()
 
@@ -146,6 +148,11 @@ def main():
 
     for i in find_key('files', cc.software):
         handle_script(i, opt)
+
+    if opt.embeddedscript:
+        if find_and_link_file(opt.embeddedscript, opt.libdirs):
+            with open(opt.embeddedscript, 'r') as f:
+                cc.software['embedded-script'] = f.read()
 
     fp = codecs.open('sw-description', 'w', 'utf-8')
     libconf.dump(cc, fp)
