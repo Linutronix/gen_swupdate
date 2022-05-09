@@ -39,9 +39,8 @@ def getsha256(filename):
     return m.hexdigest()
 
 
-def find_and_link_file(entry, libdirs):
+def find_and_link_file(fname, libdirs):
 
-    fname = entry.filename
     for d in libdirs:
         dname = os.path.join(d, fname)
         if os.path.exists(dname):
@@ -56,7 +55,7 @@ def handle_image(i, opt):
     if 'filename' not in i:
         return
 
-    file_iv = find_and_link_file(i, opt.libdirs)
+    file_iv = find_and_link_file(i.filename, opt.libdirs)
 
     sha256 = getsha256(i.filename)
     i['sha256'] = sha256
@@ -78,7 +77,7 @@ def handle_script(i, opt):
     if 'filename' not in i:
         return
 
-    find_and_link_file(i, opt.libdirs)
+    find_and_link_file(i.filename, opt.libdirs)
 
     sha256 = getsha256(i.filename)
     i['sha256'] = sha256
