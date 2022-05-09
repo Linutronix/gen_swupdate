@@ -116,6 +116,9 @@ def main():
                         default=['.'],
                         help="""add path where files (e.g. images and scripts)
                                 are searched""")
+    parser.add_argument("-f", "--files", dest="extrafiles",
+                        help="""add files not present in the sw-description, provide
+                                a list in the form '-f <file1> <file2> ...'""")
 
     opt = parser.parse_args()
 
@@ -193,6 +196,11 @@ def main():
     for i in files:
         if i not in files_for_cpio:
             files_for_cpio.append(i)
+
+    if opt.extrafiles:
+        for ef in opt.extrafiles.split():
+            if find_and_link_file(ef, opt.libdirs):
+                files_for_cpio.append(ef)
 
     for n in files_for_cpio:
         if cpio_cmd == 'cpio' and os.path.getsize(n) > (2 << 30):
