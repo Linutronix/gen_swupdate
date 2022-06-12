@@ -127,14 +127,14 @@ def main():
     opt.output = os.path.abspath(opt.output)
     opt.libdirs = [os.path.abspath(p) for p in opt.libdirs]
 
+    fp = codecs.open(swdescription_in, 'r', 'utf-8')
+    cc = libconf.load(fp, filename=swdescription_in)
+
     if not opt.chdir:
         temp = TemporaryDirectory()
         opt.chdir = temp.name
 
     os.chdir(opt.chdir)
-
-    fp = codecs.open(swdescription_in, 'r', 'utf-8')
-    cc = libconf.load(fp, filename=swdescription_in)
 
     for i in find_key('images', cc.software):
         handle_image(i, opt)
